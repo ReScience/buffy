@@ -37,6 +37,7 @@ buffy:
         - eics
     list_team_members:
       command: list editors
+      description: "List all ReScience C Associate Editors"
       team_id: 1474888
       heading: Current ReScience C editors
     set_value:
