@@ -3,11 +3,9 @@ buffy:
     bot_github_user: <%= ENV['BUFFY_BOT_GH_USER'] %>
     gh_access_token: <%= ENV['BUFFY_GH_ACCESS_TOKEN'] %>
     gh_secret_token: <%= ENV['BUFFY_GH_SECRET_TOKEN'] %>
-    reviewers_host_url: <%= ENV['REVIEWERS_HOST_URL'] %>
-    reviewers_api_token: <%= ENV['REVIEWERS_API_TOKEN'] %>
   teams:
-    editors: 1474888
-    eics: 1415509
+    editors: ReScience/editors
+    eics: ReScience/associate-editors
   responders:
     help:
       - commands:
@@ -50,7 +48,7 @@ buffy:
           only:
             - editors
             - eics
-          sample_value: "10.21105/joss.12345"
+          sample_value: "10.21105/ReScienceC.12345"
     close_issue_command:
       only:
         - editors
