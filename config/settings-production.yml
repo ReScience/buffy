@@ -64,11 +64,6 @@ buffy:
         - target-repository
         - author-handle
     set_value:
-      - version:
-          only:
-            - editors
-            - eics
-          sample_value: "v1.0.0"
       - branch:
           sample_value: "rescience-paper"
       - target-repository:
