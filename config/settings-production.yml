@@ -143,6 +143,7 @@ buffy:
             - branch
             - target-repository
             - issue_id
+            - issue_title
           mapping:
             repository_url: target-repository
       - recommend_acceptance:
