@@ -53,6 +53,10 @@ buffy:
       description: "Check the references of the paper for missing DOIs"
       example_invocation: "@editorialbot check references"
     repo_checks:
+      checks:
+        - repo summary
+        - wordcount
+        - license
       description: "Perform checks on the repository"
       example_invocation: "@editorialbot check repository"
     reviewer_checklist_comment:
