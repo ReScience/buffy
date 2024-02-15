@@ -3,11 +3,11 @@ buffy:
     bot_github_user: <%= ENV['BUFFY_BOT_GH_USER'] %>
     gh_access_token: <%= ENV['BUFFY_GH_ACCESS_TOKEN'] %>
     gh_secret_token: <%= ENV['BUFFY_GH_SECRET_TOKEN'] %>
-    reviewers_host_url: <%= ENV['REVIEWERS_HOST_URL'] %>
-    reviewers_api_token: <%= ENV['REVIEWERS_API_TOKEN'] %>
   teams:
-    editors: openjournals/joss-editors
-    eics: openjournals/joss-eics
+    editors: 1415509
+    eics: 1474888
+    #editors: ReScience/editors
+    #eics: ReScience/associate-editors
   responders:
     help:
       - commands:
@@ -15,45 +15,48 @@ buffy:
       - help:
           help_command: help
           hidden: true
-    whedon:
     thanks:
       hidden: true
-    openjournals_reviewers_start_review:
-      if:
-        title: "^\\[REVIEW\\]:"
-    openjournals_reviewers_end_review:
-      if:
-        title: "^\\[REVIEW\\]:"
-    openjournals_reviewers_list:
-      only: editors
+    reviewers_list:
+      only:
+        - editors
+        - eics
       if:
         role_assigned: editor
         reject_msg: "Can't add reviewers: There is no editor assigned yet"
       add_as_assignee: true
     list_team_members:
       command: list editors
-      team_id: openjournals/joss-editors
-      heading: List of JOSS editors
-      description: "Get a list of all editors's GitHub handles"
+      description: "List all ReScience C Editors"
+      team_id: 1415509
+      heading: Current ReScience C editors
     assign_editor:
-      only: editors
+      only:
+        - editors
+        - eics
       external_call:
-        url: "https://joss.theoj.org/papers/api_assign_editor"
+        url: "https://resciencec.theoj.org/papers/api_assign_editor"
         method: post
         query_params:
-          secret: <%= ENV['JOSS_SECRET'] %>
+          secret: <%= ENV['RESCIENCEC_SECRET'] %>
         mapping:
           id: issue_id
           editor: editor
         silent: true
     remove_editor:
-      only: editors
+      only:
+        - editors
+        - eics
     reminders:
       only: editors
     check_references:
       description: "Check the references of the paper for missing DOIs"
       example_invocation: "@editorialbot check references"
     repo_checks:
+      checks:
+        - repo summary
+        - wordcount
+        - license
       description: "Perform checks on the repository"
       example_invocation: "@editorialbot check repository"
     reviewer_checklist_comment:
@@ -65,26 +68,27 @@ buffy:
         - target-repository
         - author-handle
     set_value:
-      - version:
-          only: editors
-          sample_value: "v1.0.0"
       - branch:
-          sample_value: "joss-paper"
+          sample_value: "rescience-paper"
       - target-repository:
-          only: editors
+          only:
+            - editors
+            - eics
           sample_value: "https://github.com/organization/repo"
           aliased_as: repository
           external_call:
-            url: "https://joss.theoj.org/papers/api_update_paper_info"
+            url: "https://rescience.theoj.org/papers/api_update_paper_info"
             method: post
             query_params:
-              secret: <%= ENV['JOSS_SECRET'] %>
+              secret: <%= ENV['RESCIENCEC_SECRET'] %>
             mapping:
               id: issue_id
               repository_url: new_value
             silent: true
     openjournals_set_archive:
-      only: editors
+      only:
+        - editors
+        - eics
     ping_track_eics:
       only: editors
     external_service:
@@ -92,9 +96,9 @@ buffy:
           only: eics
           command: reject
           description: "Reject paper"
-          url: "https://joss.theoj.org/papers/api_reject"
+          url: "https://resciencec.theoj.org/papers/api_reject"
           query_params:
-            secret: <%= ENV['JOSS_SECRET'] %>
+            secret: <%= ENV['RESCIENCEC_SECRET'] %>
           mapping:
             id: issue_id
           add_labels:
@@ -106,9 +110,9 @@ buffy:
           only: eics
           command: withdraw
           description: "Withdraw paper"
-          url: "https://joss.theoj.org/papers/api_withdraw"
+          url: "https://resciencec.theoj.org/papers/api_withdraw"
           query_params:
-            secret: <%= ENV['JOSS_SECRET'] %>
+            secret: <%= ENV['RESCIENCEC_SECRET'] %>
           mapping:
             id: issue_id
           add_labels:
@@ -120,9 +124,9 @@ buffy:
           only: eics
           command: "invite @(.*) as editor"
           description: "Invite an editor to edit a submission (sending them an email)"
-          url: "https://joss.theoj.org/papers/api_editor_invite"
+          url: "https://resciencec.theoj.org/papers/api_editor_invite"
           query_params:
-            secret: <%= ENV['JOSS_SECRET'] %>
+            secret: <%= ENV['RESCIENCEC_SECRET'] %>
           mapping:
             id: issue_id
             editor: match_data_1
@@ -131,15 +135,13 @@ buffy:
     github_action:
       - draft_paper:
           command: generate pdf
-          workflow_repo: openjournals/joss-papers
+          workflow_repo: ReScience/ReScienceC-papers
           workflow_name: draft-paper.yml
-          workflow_ref: master
           description: Generates the pdf paper
           data_from_issue:
             - branch
             - target-repository
             - issue_id
-            - issue_title
           mapping:
             repository_url: target-repository
       - recommend_acceptance:
@@ -149,9 +151,8 @@ buffy:
             reject_msg: "Paper is not ready for acceptance yet, the archive is missing"
           only: editors
           command: recommend-accept
-          workflow_repo: openjournals/joss-papers
+          workflow_repo: ReScience/ReScienceC-papers
           workflow_name: recommend-acceptance.yml
-          workflow_ref: master
           description: Recommends the submission for acceptance
           message: "```\nAttempting dry run of processing paper acceptance...\n```"
           inputs:
@@ -171,9 +172,8 @@ buffy:
             reject_msg: "Paper is not ready for acceptance yet, the archive is missing"
           only: eics
           command: accept
-          workflow_repo: openjournals/joss-papers
+          workflow_repo: ReScience/ReScienceC-papers
           workflow_name: accept.yml
-          workflow_ref: master
           description: Accept and publish the paper
           message: "```\nDoing it live! Attempting automated processing of paper acceptance...\n```"
           inputs:
@@ -191,9 +191,8 @@ buffy:
             reject_msg: "Can't rebuild paper, there's no value for archive"
           only: eics
           command: reaccept
-          workflow_repo: openjournals/joss-papers
+          workflow_repo: ReScience/ReScienceC-papers
           workflow_name: reaccept.yml
-          workflow_ref: master
           description: Update data on an accepted/published paper
           message: "```\nRebuilding paper!\n```"
           data_from_issue:
@@ -204,9 +203,8 @@ buffy:
             repository_url: target-repository
       - preprint:
           command: generate preprint
-          workflow_repo: openjournals/joss-papers
+          workflow_repo: ReScience/ReScienceC-papers
           workflow_name: preprint.yml
-          workflow_ref: master
           description: Generates a LaTeX preprint file
           data_from_issue:
             - branch
@@ -225,7 +223,7 @@ buffy:
       - list_reviewers:
           command: list reviewers
           description: Get a link to the complete list of reviewers
-          template_file: reviewers_list.md
+          template_file: reviewers_list.
     update_comment:
       - editor_post-review_checklist:
           only: editors
@@ -266,9 +264,9 @@ buffy:
     external_start_review:
       only: editors
       external_call:
-        url: "https://joss.theoj.org/papers/api_start_review"
+        url: "https://resciencec.theoj.org/papers/api_start_review"
         query_params:
-          secret: <%= ENV['JOSS_SECRET'] %>
+          secret: <%= ENV['RESCIENCEC_SECRET'] %>
         data_from_issue:
           - branch
         mapping:
